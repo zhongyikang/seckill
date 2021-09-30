@@ -1,0 +1,18 @@
+server:
+  port: 8808
+
+spring:
+  # 配置数据源
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://47.97.254.8:3306/seckill?useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: ZYKxdldmd0994@
+    type: com.alibaba.druid.pool.DruidDataSource
+
+
+mybatis-plus:
+  # xml扫描，多个目录用逗号或者分号分隔（告诉 Mapper 所对应的 XML 文件位置）
+  mapper-locations: classpath*:mapper/*Mapper.xml
+  type-aliases-package: com.example.seckill.pojo
+
