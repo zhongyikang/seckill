@@ -60,6 +60,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 baseMapper.updateById(user);
 
 
+                //cookie相关
                 String uuid = UUIDUtils.getUUID(); //cookie值
                 request.getSession().setAttribute(uuid, user); //在cookie中添加key-value结构， cookie、user二者映射
                 CookieUtils.setCookie(request, response, "userTicket", uuid);
