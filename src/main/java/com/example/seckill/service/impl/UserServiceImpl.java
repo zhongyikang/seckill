@@ -1,6 +1,7 @@
 package com.example.seckill.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.seckill.exception.GlobalException;
 import com.example.seckill.mapper.UserMapper;
 import com.example.seckill.pojo.User;
 import com.example.seckill.service.IUserService;
@@ -31,11 +32,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public RespBody insertUser(User user, HttpServletRequest request, HttpServletResponse response) {
         //1.判断是否有问题。
 
-        if(StringUtils.isEmpty(user.getId()) || StringUtils.isEmpty(user.getPassword())) {
-            return RespBody.error(RespEnum.LOGIN_ERROR,"user信息不匹配，可能user.id或者user.password为空");
-        }
-        if(PhoneFormatCheckUtils.isPhoneLegal(user.getId().toString()) == false) {
-            return RespBody.error(RespEnum.LOGIN_ERROR,"登录手机号格式错误");
+//        if(StringUtils.isEmpty(user.getId()) || StringUtils.isEmpty(user.getPassword())) {
+//            throw new GlobalException(RespEnum.LOGIN_ERROR);
+//            //RespBody.error(RespEnum.LOGIN_ERROR,"user信息不匹配，可能user.id或者user.password为空");
+//        }
+
+        if (!PhoneFormatCheckUtils.isPhoneLegal(user.getId().toString())) {
+            throw new GlobalException(RespEnum.MOBILE_ERROR);
         }
 
         //2.md5加密
@@ -44,7 +47,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setSalt(MD5Utils.SALT);
 
         User userBackGroud = baseMapper.selectById(user.getId());
-        if(userBackGroud == null) {
+        if (userBackGroud == null) {
             //注册功能
             user.setLoginCount(1);
             user.setNickname(user.getId().toString());
@@ -52,27 +55,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         } else {
             //登录
             //1.在后台查看password
-            if(userBackGroud.getPassword().equals(DBpass)) {
+            if (userBackGroud.getPassword().equals(DBpass)) {
                 user.setLoginCount(userBackGroud.getLoginCount() + 1);
                 baseMapper.updateById(user);
 
 
                 String uuid = UUIDUtils.getUUID(); //cookie值
-                request.getSession().setAttribute(uuid,user); //在cookie中添加key-value结构， cookie、user二者映射
+                request.getSession().setAttribute(uuid, user); //在cookie中添加key-value结构， cookie、user二者映射
                 CookieUtils.setCookie(request, response, "userTicket", uuid);
 
 
-            } else {
-                return RespBody.error(RespEnum.LOGIN_ERROR,"密码错误");
+            } else { //密码错误
+                throw new GlobalException(RespEnum.LOGIN_PASSWORD_ERROR);
             }
-
-
 
 
         }
 
-        return RespBody.success();
-
+        //登陆成功
+        return RespBody.success(RespEnum.SUCCESS);
 
 
     }

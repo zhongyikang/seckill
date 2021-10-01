@@ -11,13 +11,19 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum RespEnum {
 
-    SUCCESS(200,"SUCCESS"),
-    ERROR(500,"ERROR"),
-    LOGIN_ERROR(401, "用户名或者密码错误or无效");
+    //通用
+    SUCCESS(200, "SUCCESS"),
+    ERROR(500, "ERROR"),
+
+    //登录
+    LOGIN_ERROR(500201, "用户名或者密码不能为空"),
+    LOGIN_PASSWORD_ERROR(500201, "用户名或者密码错误"),
+    MOBILE_ERROR(500202, "手机号码格式不正确"),
+    BIND_ERROR(500203, "参数校验错误:");
 
 
-    long code;
-    String message;
+    private final long code;
+    private final String message;
 
 
 }

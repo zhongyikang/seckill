@@ -30,8 +30,6 @@ public class User implements Serializable {
     /**
      * id，默认为手机号码
      */
-    @NotBlank(message = "id为空")
-    @NotNull(message = "id为null")
     private Long id;
 
     /**
@@ -42,8 +40,6 @@ public class User implements Serializable {
     /**
      * 密码，经过两次md5加密
      */
-    @NotNull
-    @Length(min = 32, max = 32)
     private String password;
 
     /**
