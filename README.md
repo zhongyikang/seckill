@@ -30,3 +30,15 @@ apache服务器会把某个用户的请求，交给tomcat集群中的一个节�
 ### 持久化策略：RDB + AOF
 首先使用RDB，因为当Redis宕机，RDB重启恢复的速度更快。然后使用AOF，把RDB的时间戳之后的操作，写入到Redis数据库之中。
 
+
+## 技术短板
+1. SpringMVC（WebMvcConfigurer、ArgumentAdaptor不太懂），本项目通过它实现了：
+
+本来： session--传入控制层  --获取-user-
+
+现在:   User(参数，Adapter监听)---监听到处理----传入到Controller
+
+
+
+
+
