@@ -1,7 +1,9 @@
 package com.example.seckill.controller;
 
 import com.example.seckill.pojo.User;
+import com.example.seckill.service.IUserService;
 import com.example.seckill.vo.RespBody;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -18,13 +20,18 @@ import javax.servlet.http.HttpSession;
 @Controller("/good")
 public class GoodController {
 
+    @Autowired
+    private IUserService userService;
+
     @GetMapping("/list")
     public String list(HttpSession session, Model model, @CookieValue("userTicket") String ticket) {
         //这里的返回值String类型表示的是view的name。跳转到对应的页面。
         if (StringUtils.isEmpty(ticket)) {
             return "login"; //跳转到resource/templates/login.html页面
         } else {
-            User user = (User) session.getAttribute(ticket);
+            //User user = (User) session.getAttribute(ticket);
+            User user = userService.getUserByCookie(ticket);
+
             if (user == null) {
                 return "login";
             }

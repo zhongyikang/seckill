@@ -11,6 +11,8 @@ import com.example.seckill.utils.PhoneFormatCheckUtils;
 import com.example.seckill.utils.UUIDUtils;
 import com.example.seckill.vo.RespBody;
 import com.example.seckill.vo.RespEnum;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -27,6 +29,9 @@ import javax.servlet.http.HttpServletResponse;
  */
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Override
     public RespBody insertUser(User user, HttpServletRequest request, HttpServletResponse response) {
@@ -62,7 +67,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
                 //cookie相关
                 String uuid = UUIDUtils.getUUID(); //cookie值
-                request.getSession().setAttribute(uuid, user); //在cookie中添加key-value结构， cookie、user二者映射
+                redisTemplate.opsForValue().set("user:" + uuid, user);
+                //request.getSession().setAttribute(uuid, user); //在cookie中添加key-value结构， cookie、user二者映射
                 CookieUtils.setCookie(request, response, "userTicket", uuid);
 
 
@@ -77,5 +83,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return RespBody.success(RespEnum.SUCCESS);
 
 
+    }
+
+    @Override
+    public User getUserByCookie(String ticket) {
+        User user = (User) redisTemplate.opsForValue().get("user:" + ticket);
+
+        return user;
     }
 }

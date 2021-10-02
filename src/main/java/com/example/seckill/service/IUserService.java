@@ -18,4 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 public interface IUserService extends IService<User> {
 
     RespBody insertUser(User user, HttpServletRequest request, HttpServletResponse response);
+
+    User getUserByCookie(String ticket);
+
 }

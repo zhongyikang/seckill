@@ -9,7 +9,21 @@ spring:
     password: ZYKxdldmd0994@
     type: com.alibaba.druid.pool.DruidDataSource
 
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    database: 0
+    timeout: 10000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: 10000ms
+        max-idle: 200
+
 
 mybatis-plus:
   mapper-locations: classpath*:mapper/*Mapper.xml
   type-aliases-package: com.example.seckill.pojo
+
+
+
