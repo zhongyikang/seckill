@@ -24,19 +24,14 @@ public class GoodController {
     private IUserService userService;
 
     @GetMapping("/list")
-    public String list(HttpSession session, Model model, @CookieValue("userTicket") String ticket) {
+    public String list(Model model, User user /*MVCConfig会对参数进行监听，在Controller入参之前，如果看到了User， 会自动到Cookie中查找插入进入User*/) {
         //这里的返回值String类型表示的是view的name。跳转到对应的页面。
-        if (StringUtils.isEmpty(ticket)) {
-            return "login"; //跳转到resource/templates/login.html页面
-        } else {
-            //User user = (User) session.getAttribute(ticket);
-            User user = userService.getUserByCookie(ticket);
 
-            if (user == null) {
-                return "login";
-            }
-            model.addAttribute("user", user);
-            return "goodList";
+        if (user == null) {
+            return "login";
         }
+        model.addAttribute("user", user);
+        return "goodList";
+
     }
 }

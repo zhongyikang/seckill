@@ -11,6 +11,7 @@ import com.example.seckill.utils.PhoneFormatCheckUtils;
 import com.example.seckill.utils.UUIDUtils;
 import com.example.seckill.vo.RespBody;
 import com.example.seckill.vo.RespEnum;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
  * @since 2021-09-30
  */
 @Service
+@Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
 
     @Autowired
@@ -67,15 +69,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
                 //cookie相关
                 String uuid = UUIDUtils.getUUID(); //cookie值
+                log.info("start insert user info to redis cache ...");
+
                 redisTemplate.opsForValue().set("user:" + uuid, user);
                 //request.getSession().setAttribute(uuid, user); //在cookie中添加key-value结构， cookie、user二者映射
                 CookieUtils.setCookie(request, response, "userTicket", uuid);
 
-
             } else { //密码错误
                 throw new GlobalException(RespEnum.LOGIN_PASSWORD_ERROR);
             }
-
 
         }
 

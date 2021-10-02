@@ -19,6 +19,11 @@ public class RedisConfig {
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
 
+        /**
+         * 整个操作的的结果就是：
+         * 序列化时，插入的结构式String,Object(动态映射)。
+         * 在JSON中，可以看到插入的value结构中有类信息，在反序列化的时候通过反射构建对象。
+         */
         //key序列化
         redisTemplate.setKeySerializer(new StringRedisSerializer());
 
