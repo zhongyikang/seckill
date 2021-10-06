@@ -1,6 +1,7 @@
 package com.example.seckill.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.seckill.exception.GlobalException;
 import com.example.seckill.pojo.*;
 import com.example.seckill.mapper.OrderMapper;
 import com.example.seckill.service.IGoodsService;
@@ -8,6 +9,8 @@ import com.example.seckill.service.IOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.seckill.service.ISeckillGoodsService;
 import com.example.seckill.service.ISeckillOrderService;
+import com.example.seckill.vo.OrderVo;
+import com.example.seckill.vo.RespEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -78,6 +81,26 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
         //返回订单
         return order;
+
+    }
+
+    @Override
+    public OrderVo details(Long orderId) {
+
+
+        Order order = baseMapper.selectById(orderId);
+        if (order == null) {
+            new GlobalException(RespEnum.ORDER_NO_EXIST);
+        }
+
+        Goods goods = goodsService.getById(order.getGoodsId());
+
+
+        OrderVo orderVo = new OrderVo();
+        orderVo.setGoods(goods);
+        orderVo.setOrder(order);
+
+        return orderVo;
 
     }
 }

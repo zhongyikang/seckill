@@ -93,4 +93,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         return user;
     }
+
+    @Override
+    public RespBody updatePassword(String userTicket, String password) {
+        User user = this.getUserByCookie(userTicket);
+
+        if (user == null) {
+            throw new GlobalException(RespEnum.MOBILE_NO_REGISTER);
+        }
+
+        user.setPassword(MD5Utils.formpassToDBpass(password, MD5Utils.SALT));
+
+        int i = baseMapper.updateById(user);
+        if (i == 1) {
+            //修改成功，删除redis里面的session-用户信息结构。
+            redisTemplate.delete("user:" + userTicket);
+            return RespBody.success(RespEnum.PASSWORD_UPDATE_SUCCESS);
+        }
+
+        return RespBody.error(RespEnum.ERROR, "修改失败");
+
+
+    }
 }

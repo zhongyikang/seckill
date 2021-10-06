@@ -11,6 +11,7 @@ import com.example.seckill.service.ISeckillOrderService;
 import com.example.seckill.service.IUserService;
 import com.example.seckill.service.impl.GoodsServiceImpl;
 import com.example.seckill.vo.GoodsVo;
+import com.example.seckill.vo.OrderVo;
 import com.example.seckill.vo.RespBody;
 import com.example.seckill.vo.RespEnum;
 import io.swagger.annotations.Api;
@@ -19,6 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * @author zhongyikang
@@ -44,32 +48,41 @@ public class SeckillController {
 
     @ApiOperation("秒杀商品")
     @PostMapping("/dosecKill/{goodsId}")
-    public String dosecKill(Model model, User user, @PathVariable Long goodsId) {
-        if (user == null)
-            return "login";
+    public RespBody dosecKill(HttpServletResponse response, User user, @PathVariable Long goodsId) {
+        if (user == null) {
+            try {
+                response.sendRedirect("/login/loginByPhone");
+                return RespBody.error(RespEnum.MOBILE_NO_REGISTER);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
 
         GoodsVo goodsVo = goodsService.findGoodsVoByGoodsId(goodsId);
 
         //判断库存、判断是否重复抢购，如果是，跳转到secFail页面。
         if (goodsVo.getStockCount() == 0) {
-            model.addAttribute("errMsg", RespEnum.STOCK_EMPTY.getMessage());
-            return "seckillFail";
+            return RespBody.error(RespEnum.STOCK_EMPTY);
         }
 
         SeckillOrder seckillOrder = seckillOrderService.getOne(new QueryWrapper<SeckillOrder>().eq("user_id", user.getId()).eq("goods_id", goodsId));
 
         if (seckillOrder != null) {
-            model.addAttribute("errMsg", RespEnum.REPEATED_SECKILL.getMessage());
-            return "seckillFail";
+            return RespBody.error(RespEnum.REPEATED_SECKILL);
         }
+
 
         // 如果以上条件否符合，则秒杀。创建订单，并跳转到order页面
         Order order = orderService.seckill(user, goodsVo);
 
-        model.addAttribute("order", order);
-        model.addAttribute("goods", goodsVo);
-        return "orderDetail";
+        OrderVo orderVo = new OrderVo();
+
+        orderVo.setOrder(order);
+        orderVo.setGoods(goodsVo);
+
+
+        return RespBody.success(RespEnum.SUCCESS, orderVo);
     }
 
     @ApiOperation("秒杀商品测试")

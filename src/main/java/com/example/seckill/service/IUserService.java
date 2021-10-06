@@ -21,4 +21,6 @@ public interface IUserService extends IService<User> {
 
     User getUserByCookie(String ticket);
 
+    RespBody updatePassword(String userTicket, String password);
+
 }
