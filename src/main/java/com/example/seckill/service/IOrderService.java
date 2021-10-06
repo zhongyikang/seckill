@@ -1,7 +1,9 @@
 package com.example.seckill.service;
 
+import com.example.seckill.pojo.Goods;
 import com.example.seckill.pojo.Order;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.seckill.pojo.User;
 
 /**
  * <p>
@@ -13,4 +15,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IOrderService extends IService<Order> {
 
+
+    Order seckill(User user, Goods goods);
 }

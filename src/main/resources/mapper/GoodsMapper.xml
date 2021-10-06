@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.seckill.mapper.GoodsMapper">
+
+
+    <select id="findGoodsVo" resultType="com.example.seckill.vo.GoodsVo">
+    select
+g.id as id,
+goods_name,
+goods_title,
+goods_img,
+goods_price,
+goods_stock,
+goods_detail,
+seckill_price,
+stock_count,
+start_time,
+end_time
+
+
+from goods g left join seckill_goods sg on g.id = sg.goods_id
+</select>
+
+    <select id="findGoodsVoByGoodsId" parameterType="java.lang.Long" resultType="com.example.seckill.vo.GoodsVo">
+        SELECT
+            g.id AS id,
+            goods_name,
+            goods_title,
+            goods_img,
+            goods_price,
+            goods_stock,
+            goods_detail,
+            seckill_price,
+            stock_count,
+            start_time,
+            end_time
+        FROM
+            goods g
+        LEFT JOIN seckill_goods sg ON g.id = sg.goods_id
+        WHERE
+            g.id = #{goodsId};
+    </select>
+
+
+</mapper>

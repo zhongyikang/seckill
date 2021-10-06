@@ -17,4 +17,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class SeckillOrderServiceImpl extends ServiceImpl<SeckillOrderMapper, SeckillOrder> implements ISeckillOrderService {
 
+    @Override
+    public void addOrder(SeckillOrder seckillOrder) {
+        baseMapper.insert(seckillOrder);
+    }
 }
