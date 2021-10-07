@@ -3,6 +3,7 @@ package com.example.seckill.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.seckill.exception.GlobalException;
 import com.example.seckill.pojo.Order;
+import com.example.seckill.pojo.SeckillGoods;
 import com.example.seckill.pojo.SeckillOrder;
 import com.example.seckill.pojo.User;
 import com.example.seckill.service.IGoodsService;
@@ -17,6 +18,7 @@ import com.example.seckill.vo.RespEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -46,6 +48,9 @@ public class SeckillController {
     @Autowired
     private IUserService userService;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     @ApiOperation("秒杀商品")
     @PostMapping("/dosecKill/{goodsId}")
     public RespBody dosecKill(HttpServletResponse response, User user, @PathVariable Long goodsId) {
@@ -61,19 +66,21 @@ public class SeckillController {
 
         GoodsVo goodsVo = goodsService.findGoodsVoByGoodsId(goodsId);
 
-        //判断库存、判断是否重复抢购，如果是，跳转到secFail页面。
-        if (goodsVo.getStockCount() == 0) {
+        //判断库存，如果是，跳转到secFail页面。
+        if (goodsVo.getStockCount() < 1) {
             return RespBody.error(RespEnum.STOCK_EMPTY);
         }
+//        SeckillOrder seckillOrder = seckillOrderService.getOne(new QueryWrapper<SeckillOrder>().eq("user_id", user.getId()).eq("goods_id", goodsId));
 
-        SeckillOrder seckillOrder = seckillOrderService.getOne(new QueryWrapper<SeckillOrder>().eq("user_id", user.getId()).eq("goods_id", goodsId));
 
+        //从redis缓存中获取秒杀订单，如果有实体， 则表示已经购买，不可以重复购买。
+        SeckillOrder seckillOrder = (SeckillOrder) redisTemplate.opsForValue().get("order:" + user.getId() + ":" + goodsId);
         if (seckillOrder != null) {
             return RespBody.error(RespEnum.REPEATED_SECKILL);
         }
 
 
-        // 如果以上条件否符合，则秒杀。创建订单，并跳转到order页面
+        //如果以上条件否符合，则秒杀。创建订单，并跳转到order页面
         Order order = orderService.seckill(user, goodsVo);
 
         OrderVo orderVo = new OrderVo();
