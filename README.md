@@ -64,3 +64,39 @@ apache服务器会把某个用户的请求，交给tomcat集群中的一个节�
 
 使用前后端分离技术， 不需要每次向前端传送一个HTML页面，而是传送json数据。 数据在前端渲染。
 
+
+
+
+
+## 秒杀效果提高
+
+
+
+1. 使用前后端分离技术， 每次向前端传送json数据而不是一整个HTML页面。
+2. 在秒杀前， 需要判断库存。 这时候是到后台数据库中找。 **修改为**：在redis中找。 （每次秒杀生成订单的时候把记录存入redis缓存中）。redis因为是内存，检索速度更快。
+
+
+
+
+
+## 解决超卖问题
+
+1. 每次扣库存的时候（是一条sql语句）， 在这条语句的同时进行库存量的判断，如果库存量小于1，则不进行减库存操作。
+
+   ```java
+   boolean hasUpdated = seckillGoodsService.update(
+           new UpdateWrapper<SeckillGoods>()
+                   .eq("goods_id", goods.getId())
+                   .gt("stock_count", 0)
+                   .setSql("stock_count = stock_count - 1"));
+   //如果更新失败，返回false。通过这个false， 抛出GlobalException，被ExceptionHandler拦截，返回错误信息到前台。
+   ```
+
+   
+
+
+
+## 秒杀效果的再次提高
+
+1. 把商品放在redis缓存中，这样直接减少对数据库的访问。
+2. 对于订单的生成过程（秒杀商品订单、普通商品订单）放在rabbitMQ中进行异步生成。

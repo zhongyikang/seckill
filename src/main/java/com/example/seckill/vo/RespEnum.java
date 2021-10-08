@@ -28,7 +28,10 @@ public enum RespEnum {
     REPEATED_SECKILL(505202, "一个用户只能秒杀一次"),
 
     //订单 506
-    ORDER_NO_EXIST(506201, "订单不存在");
+    ORDER_NO_EXIST(506201, "订单不存在"),
+
+    //session错误
+    SESSION_ERROR(507201, "session错误，找不到用户信息");
 
     private final long code;
     private final String message;

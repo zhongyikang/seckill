@@ -129,6 +129,14 @@
             <artifactId>mybatis-typehandlers-jsr310</artifactId>
             <version>1.0.1</version>
         </dependency>
+
+
+        <!--json转化成对象-->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.47</version>
+        </dependency>
     </dependencies>
 
     <build>

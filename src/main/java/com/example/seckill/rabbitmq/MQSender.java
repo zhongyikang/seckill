@@ -20,4 +20,11 @@ public class MQSender {
         log.info("发送消息：" + msg);
         rabbitTemplate.convertAndSend("queue", msg);
     }
+
+    public void sendSeckillMsg(String msg) {
+        log.info("发送秒杀信息：" + msg);
+        rabbitTemplate.convertAndSend("seckillExchange", "seckill.message", msg);
+    }
+
+
 }

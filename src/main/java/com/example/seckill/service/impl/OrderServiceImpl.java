@@ -10,6 +10,7 @@ import com.example.seckill.service.IOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.seckill.service.ISeckillGoodsService;
 import com.example.seckill.service.ISeckillOrderService;
+import com.example.seckill.vo.GoodsVo;
 import com.example.seckill.vo.OrderVo;
 import com.example.seckill.vo.RespEnum;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,13 +49,19 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Transactional //事务，出现异常的时候进行回滚操作
     @Override
-    public Order seckill(User user, Goods goods) {
+    public Order seckill(User user, Long goodsId) {
         //到了这里，表示1当前用户未秒杀， 2当前秒杀库存充足
         //1查询秒杀库存，如果有， 秒杀库存量 -1，普通商品库存量 - 1， 创建order表。
 
+        GoodsVo goods = goodsService.findGoodsVoByGoodsId(goodsId);
 
         //更新秒杀商品库存,解决超卖问题。（如果库存小于0，不更新）
         SeckillGoods seckillGoods = seckillGoodsService.getByGoodsId(goods.getId());
+
+        if (seckillGoods.getStockCount() < 1) {
+            redisTemplate.opsForValue().set("isStockEmpty:" + goodsId, "0");
+            throw new GlobalException(RespEnum.STOCK_EMPTY);
+        }
 
         boolean hasUpdated = seckillGoodsService.update(
                 new UpdateWrapper<SeckillGoods>()
@@ -63,7 +70,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                         .setSql("stock_count = stock_count - 1"));
 
 
-        if (hasUpdated == false) {//更新失败,因为没有内存了。
+        if (hasUpdated == false) {//更新失败,因为没有库存了。
             throw new GlobalException(RespEnum.STOCK_EMPTY);
         }
 
