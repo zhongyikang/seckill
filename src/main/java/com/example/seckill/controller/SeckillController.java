@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -61,8 +62,8 @@ public class SeckillController implements InitializingBean {
     private HashMap<Long, Boolean> emptyStock = new HashMap<>();
 
     @ApiOperation("秒杀商品")
-    @PostMapping("/dosecKill/{goodsId}")
-    public RespBody dosecKill(HttpServletResponse response, User user, @PathVariable Long goodsId) {
+    @PostMapping("/{path}/dosecKill")
+    public RespBody dosecKill(HttpServletResponse response, User user, Long goodsId, @PathVariable String path) {
         if (user == null) {
             try {
                 response.sendRedirect("/login/loginByPhone");
@@ -70,6 +71,12 @@ public class SeckillController implements InitializingBean {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+
+        boolean isPathTrue = orderService.checkPath(user, goodsId, path);
+        if (!isPathTrue) {
+            //
+            throw new GlobalException(RespEnum.ERROR);
         }
 
         //如果库存为空， 直接退出。
@@ -144,6 +151,23 @@ public class SeckillController implements InitializingBean {
 
 
         return RespBody.success(RespEnum.SUCCESS, order);
+    }
+
+    @ApiOperation("获取秒杀地址，因为秒杀地址已经被隐藏了") //这个api就是前台点击‘开始秒杀’后发送的请求你
+    @GetMapping("/path")
+    public RespBody getPath(User user, Long goodsId, String captcha) {
+        if (user == null) {
+            throw new GlobalException(RespEnum.ERROR);
+        }
+
+
+        //创建一个随机path
+        String path = orderService.createPath(user, goodsId);
+
+        boolean isCaptchaMatched = orderService.checkCaptcha(user, goodsId, captcha);
+
+
+        return RespBody.success(RespEnum.SUCCESS, path);
     }
 
 

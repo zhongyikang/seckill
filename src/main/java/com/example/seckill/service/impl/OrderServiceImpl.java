@@ -10,6 +10,8 @@ import com.example.seckill.service.IOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.seckill.service.ISeckillGoodsService;
 import com.example.seckill.service.ISeckillOrderService;
+import com.example.seckill.utils.MD5Utils;
+import com.example.seckill.utils.UUIDUtils;
 import com.example.seckill.vo.GoodsVo;
 import com.example.seckill.vo.OrderVo;
 import com.example.seckill.vo.RespEnum;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -128,6 +131,48 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         orderVo.setOrder(order);
 
         return orderVo;
+
+    }
+
+    @Override
+    public String createPath(User user, Long goodsId) {
+        String str = MD5Utils.passToMD5Password(UUIDUtils.getUUID());
+        redisTemplate.opsForValue().set("seckillPath:" + user.getId() + ":" + goodsId, str);
+        return str;
+    }
+
+    @Override
+    public boolean checkPath(User user, Long goodsId, String path) {
+        if (user == null || goodsId < 0 || StringUtils.isEmpty(path)) {
+            throw new GlobalException(RespEnum.SUCCESS);
+        }
+
+        String key = "seckillPath:" + user.getId() + ":" + goodsId;
+        String value = (String) redisTemplate.opsForValue().get(key);
+        if (value != null && value.equals(path)) {
+            return true;
+        }
+        return false;
+
+    }
+
+    @Override
+    public boolean checkCaptcha(User user, Long goodsId, String captcha) {
+        if (user == null || goodsId < 0 || captcha == null) {
+            throw new GlobalException(RespEnum.ERROR);
+        }
+
+
+        //这个redis值是在创建验证码api时存入到redis之中的。 （但是本项目没有实现...因为那个依赖在网上找不到）
+        String redisCaptcha = (String) redisTemplate.opsForValue().get("seckillCaptcha:" + user.getId() + ":" + goodsId);
+        if (captcha.equals(redisCaptcha)) {
+            return true;
+        }
+        return false;
+
+
+        //"seckillPath:" + user.getId() + ":" + goodsId
+
 
     }
 }
